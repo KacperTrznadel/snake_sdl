@@ -24,7 +24,9 @@ Classic snake game using C Language with SDL Library.
 
 In order to compile and run the game, use the start.sh bash script, by inputing following line in Linux Terminal:
 
-- ./start.sh
+```bash
+./start.sh
+```
 
 ## How to play
 
