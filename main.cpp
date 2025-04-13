@@ -32,11 +32,11 @@ typedef struct {
 } Point;
 
 typedef struct {
-	Point* data;     // WskaŸnik na tablicê przechowuj¹c¹ elementy kolejki
-	int front;      // Indeks pocz¹tku kolejki
-	int end;       // Indeks koñca kolejki
-	int size;       // Bie¿¹cy rozmiar kolejki
-	int capacity;   // Maksymalna pojemnoœæ kolejki
+	Point* data;     // Pointer for array holding the Queue elements
+	int front;      // Front index of the Queue
+	int end;       // End index of the Queue
+	int size;       // current Queue size
+	int capacity;   // Maximal current capacity (for dynamic extension purposes)
 } Queue;
 
 typedef struct {
@@ -49,7 +49,7 @@ typedef struct {
 } DotStatus;
 
 //=========================
-//=====FUNKCJE KOLEJKI=====
+//=====QUEUE FUNCTIONS=====
 //=========================
 
 Queue* createQueue(int capacity) {
@@ -71,7 +71,7 @@ bool isFull(Queue* queue) {
 }
 
 void resizeQueue(Queue* queue) {
-	int newCapacity = queue->capacity * 2; // Podwajamy pojemnoœæ
+	int newCapacity = queue->capacity * 2; // Double the capacity
 	Point* newData = (Point*)malloc(newCapacity * sizeof(Point));
 
 	for (int i = 0; i < queue->size; i++) {
@@ -89,7 +89,7 @@ void addToQueue(Queue* queue, Point item) {
 	if (isFull(queue)) {
 		resizeQueue(queue);
 	}
-	queue->end = (queue->end + 1) % queue->capacity; // Cyklowe przesuniêcie wskaŸnika koñca
+	queue->end = (queue->end + 1) % queue->capacity; // Cyclic end pointer shifting
 	queue->data[queue->end] = item;
 	queue->size++;
 }
@@ -117,13 +117,13 @@ Point getElementAt(Queue* queue, int position) {
 void freeQueue(Queue* queue) {
 	if (queue->data != NULL) {
 		free(queue->data);
-		queue->data = NULL; // anty podwójne zwolnienie pamiêci
+		queue->data = NULL; // anti double memory release
 	}
 	free(queue);
 }
 
-// narysowanie napisu txt na powierzchni screen, zaczynaj¹c od punktu (x, y)
-// charset to bitmapa 128x128 zawieraj¹ca znaki
+// drawing inscrpition begining at point (x, y)
+// charset is 128x128 bitmap containing chars
 void DrawString(SDL_Surface *screen, int x, int y, const char *text,
                 SDL_Surface *charset) {
 	int px, py, c;
@@ -146,8 +146,8 @@ void DrawString(SDL_Surface *screen, int x, int y, const char *text,
 		};
 	};
 
-// narysowanie na ekranie screen powierzchni sprite w punkcie (x, y)
-// (x, y) to punkt œrodka obrazka sprite na ekranie
+// drawing at screen's surface sprite in point (x, y)
+// (x, y) is a center point of sprite on the screen
 void DrawSurface(SDL_Surface *screen, SDL_Surface *sprite, int x, int y) {
 	SDL_Rect dest;
 	dest.x = x - sprite->w / 2;
@@ -157,15 +157,15 @@ void DrawSurface(SDL_Surface *screen, SDL_Surface *sprite, int x, int y) {
 	SDL_BlitSurface(sprite, NULL, screen, &dest);
 };
 
-// rysowanie pojedynczego pixela
+// drawing single pixel
 void DrawPixel(SDL_Surface *surface, int x, int y, Uint32 color) {
 	int bpp = surface->format->BytesPerPixel;
 	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 	*(Uint32 *)p = color;
 	};
 
-// rysowanie linii o d³ugoœci l w pionie (gdy dx = 0, dy = 1) 
-// b¹dŸ poziomie (gdy dx = 1, dy = 0)
+// drawing a line with l size vertically (when dx = 0, dy = 1) 
+// or horizontally (when dx = 1, dy = 0)
 void DrawLine(SDL_Surface *screen, int x, int y, int l, int dx, int dy, Uint32 color) {
 	for(int i = 0; i < l; i++) {
 		DrawPixel(screen, x, y, color);
@@ -174,7 +174,7 @@ void DrawLine(SDL_Surface *screen, int x, int y, int l, int dx, int dy, Uint32 c
 		};
 	};
 
-// rysowanie prostok¹ta o d³ugoœci boków l i k
+// drawing a rectangle with sides of length l and k
 void DrawRectangle(SDL_Surface *screen, int x, int y, int l, int k,
                    Uint32 outlineColor, Uint32 fillColor) {
 	int i;
@@ -222,21 +222,21 @@ void DrawSnake(SDL_Surface* screen, Queue* snake, Uint32 color) {
 		Point segment = getElementAt(snake, i);
 
 		if (i == snake->size - 1) {
-			// G³owa wê¿a
+			// snake's head
 			Uint32 headColor = SDL_MapRGB(screen->format, 255, 255, 0);
 			DrawRectangle(screen, segment.x, segment.y, GRID_SIZE, GRID_SIZE, headColor, headColor);
 		}
 		else if (i == 0) {
-			// Ogon wê¿a
+			// snake's tail
 			Uint32 tailColor = SDL_MapRGB(screen->format, 88, 57, 49);
 			DrawRectangle(screen, segment.x, segment.y, GRID_SIZE / 2, GRID_SIZE / 2, tailColor, tailColor);
 		}
 		else {
-			// Cia³o wê¿a z 'animacj¹'
+			// snake's body with 'animation'
 			int isBig = ((snake->size - 1 - i) % 2 == 1);
 			int size = isBig ? GRID_SIZE : GRID_SIZE / 2;
 
-			// Wyœrodkowanie ma³ej komórki w GRID_SIZE
+			// centering small cell in GRID_SIZE
 			int offsetX = isBig ? 0 : (GRID_SIZE - size) / 2;
 			int offsetY = isBig ? 0 : (GRID_SIZE - size) / 2;
 
@@ -278,7 +278,7 @@ void ResetQueue(Queue* queue) {
 }
 
 void RestartGame(Queue* snake, int* dx, int* dy, Uint32* gameStartTime, Uint32* lastMoveTime, double* snakeSpeed, Uint32* speedUpTime, int* totalPoints, DotStatus* blueDotInfo, DotStatus* redDotInfo) {
-	// Resetowanie wê¿a
+	// Snake Reset
 	ResetQueue(snake);
 	*totalPoints = 0;
 	*snake = *createQueue(100);
@@ -288,23 +288,23 @@ void RestartGame(Queue* snake, int* dx, int* dy, Uint32* gameStartTime, Uint32* 
 		addToQueue(snake, segment);
 	}
 
-	// Resetowanie kierunku
+	// Direction reset
 	*dx = GRID_SIZE;
 	*dy = 0;
 
-	// Resetowanie czasu
+	// Time reset
 	*gameStartTime = SDL_GetTicks();
 	*lastMoveTime = *gameStartTime;
 	*speedUpTime = *gameStartTime;
 
-	// Resetowanie niebieskiej kropki
+	// Blue dot reset
 	blueDotInfo->x = -10;
 	blueDotInfo->y = -10;
 	blueDotInfo->isBarActive = 0;
 	blueDotInfo->progressBar = 0.0;
 	blueDotInfo->reset = true;
 
-	// Resetowanie czerwonej kropki
+	// Red dot reset
 	redDotInfo->x = -10;
 	redDotInfo->y = -10;
 	redDotInfo->isBarActive = 0;
@@ -326,36 +326,36 @@ void InitScreen(SDL_Surface* screen, SDL_Surface* charset, Uint32 color, SDL_Win
 }
 
 void HandleSnakeTurn(Point head, Point newHead, int* dx, int* dy) {
-	if (newHead.x >= SCREEN_WIDTH - 12) { // Prawa krawêdŸ
+	if (newHead.x >= SCREEN_WIDTH - 12) { // Right edge
 		if (IsInsideGameArea({ head.x, head.y + GRID_SIZE })) {
-			*dx = 0; *dy = GRID_SIZE; // Skrêt w dó³
+			*dx = 0; *dy = GRID_SIZE; // Turn down
 		}
 		else if (IsInsideGameArea({ head.x, head.y - GRID_SIZE })) {
-			*dx = 0; *dy = -GRID_SIZE; // Skrêt w górê
+			*dx = 0; *dy = -GRID_SIZE; // Turn up
 		}
 	}
-	else if (newHead.x < 4) { // Lewa krawêdŸ
+	else if (newHead.x < 4) { // Left edge
 		if (IsInsideGameArea({ head.x, head.y - GRID_SIZE })) {
-			*dx = 0; *dy = -GRID_SIZE; // Skrêt w górê
+			*dx = 0; *dy = -GRID_SIZE; // Turn up
 		}
 		else if (IsInsideGameArea({ head.x, head.y + GRID_SIZE })) {
-			*dx = 0; *dy = GRID_SIZE; // Skrêt w dó³
+			*dx = 0; *dy = GRID_SIZE; // Turn down
 		}
 	}
-	else if (newHead.y < 62) { // Górna krawêdŸ
+	else if (newHead.y < 62) { // Top edge
 		if (IsInsideGameArea({ head.x + GRID_SIZE, head.y })) {
-			*dx = GRID_SIZE; *dy = 0; // Skrêt w prawo
+			*dx = GRID_SIZE; *dy = 0; // Turn right
 		}
 		else if (IsInsideGameArea({ head.x - GRID_SIZE, head.y })) {
-			*dx = -GRID_SIZE; *dy = 0; // Skrêt w lewo
+			*dx = -GRID_SIZE; *dy = 0; // Turn left
 		}
 	}
-	else if (newHead.y >= SCREEN_HEIGHT - 12) { // Dolna krawêdŸ
+	else if (newHead.y >= SCREEN_HEIGHT - 12) { // Bottom edge
 		if (IsInsideGameArea({ head.x - GRID_SIZE, head.y })) {
-			*dx = -GRID_SIZE; *dy = 0; // Skrêt w lewo
+			*dx = -GRID_SIZE; *dy = 0; // Turn left
 		}
 		else if (IsInsideGameArea({ head.x + GRID_SIZE, head.y })) {
-			*dx = GRID_SIZE; *dy = 0; // Skrêt w prawo
+			*dx = GRID_SIZE; *dy = 0; // Turn right
 		}
 	}
 }
@@ -431,7 +431,7 @@ DotStatus BlueDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* blueDot, 
 		}
 
 		pulse++;
-		if (pulse >= pulseDelay * 2) { // Reset cyklu po wyœwietleniu obu form
+		if (pulse >= pulseDelay * 2) { // Cycle reset after displaying both forms
 			pulse = 0;
 		}
 	}
@@ -445,9 +445,9 @@ DotStatus BlueDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* blueDot, 
 DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, double* snakeSpeed, Uint32 elapsedTime, int* totalPoints, DotStatus redDotInfo) {
 	static bool onMap = false;       
 	static Point dot = { -10, -10 };
-	static Uint32 spawnTime = 0;     // Czas pojawienia siê kropki
-	static Uint32 nextAppearanceTime = 0; // Czas nastêpnego pojawienia siê kropki
-	static Uint32 randomDelay = 0;   // Losowe opóŸnienie przed pojawieniem siê kropki
+	static Uint32 spawnTime = 0;     // Dot appearance time
+	static Uint32 nextAppearanceTime = 0; // next dot appearance time
+	static Uint32 randomDelay = 0;   // Random delay before dot appearance
 	//SDL_Surface* scaledRedDot = SDL_CreateRGBSurfaceWithFormat(0, 2, 2, redDot->format->BitsPerPixel, redDot->format->format);
 	SDL_Surface* scaledRedDot = SDL_LoadBMP("./redDot4x4.bmp");
 
@@ -475,15 +475,15 @@ DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, do
 		redDotInfo.reset = false;
 	}
 
-	// Jeœli kropka nie jest na mapie
+	// if dot is not on the map
 	if (!onMap) {
 		if (nextAppearanceTime == 0) {
-			// Ustaw pierwszy czas pojawienia siê
+			// Set first time of appearing
 			randomDelay = (rand() % (RED_DOT_FREQUENCY_HIGHEST - RED_DOT_FREQUENCY_LOWEST + 1) + RED_DOT_FREQUENCY_LOWEST) * 1000;
 			nextAppearanceTime = currentTime + randomDelay;
 		}
 		else if (currentTime >= nextAppearanceTime) {
-			// Gdy nadejdzie czas, losuj pozycjê kropki
+			// When the time comes, randomize the spawnpoint
 			dot = DotGenerator(screen, snake);
 			redDotInfo.x = dot.x;
 			redDotInfo.y = dot.y;
@@ -492,7 +492,7 @@ DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, do
 		}
 	}
 
-	// Obliczanie postêpu paska
+	// Calculating bar's progress
 	double progress = 0.0;
 	if (onMap) {
 		progress = (double)(currentTime - spawnTime) / RED_DOT_LIVESPAN;
@@ -502,13 +502,13 @@ DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, do
 		redDotInfo.isBarActive = false;
 	}
 
-	// Jeœli kropka jest na mapie i czas jej ¿ycia min¹³
+	// If dot is on the map and her lifespan expired
 	if (onMap && progress >= 1.0) {
 		onMap = false;
-		nextAppearanceTime = currentTime + (rand() % (RED_DOT_FREQUENCY_HIGHEST - RED_DOT_FREQUENCY_LOWEST + 1) + RED_DOT_FREQUENCY_LOWEST) * 1000; // Ustaw kolejny czas pojawienia siê
+		nextAppearanceTime = currentTime + (rand() % (RED_DOT_FREQUENCY_HIGHEST - RED_DOT_FREQUENCY_LOWEST + 1) + RED_DOT_FREQUENCY_LOWEST) * 1000; // Ustaw kolejny czas pojawienia siï¿½
 	}
 
-	// Jeœli w¹¿ zje kropkê
+	// If snake eats the dots
 	if (onMap && CheckCollision(dot, snake)) {
 		int random = rand() % 2;
 
@@ -519,10 +519,10 @@ DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, do
 
 		(*totalPoints) += POINTS_PER_DOT;
 		onMap = false;
-		nextAppearanceTime = currentTime + (rand() % (RED_DOT_FREQUENCY_HIGHEST - RED_DOT_FREQUENCY_LOWEST + 1) + RED_DOT_FREQUENCY_LOWEST) * 1000; // Ustaw kolejny czas pojawienia siê
+		nextAppearanceTime = currentTime + (rand() % (RED_DOT_FREQUENCY_HIGHEST - RED_DOT_FREQUENCY_LOWEST + 1) + RED_DOT_FREQUENCY_LOWEST) * 1000; // Ustaw kolejny czas pojawienia siï¿½
 	}
 
-	// Rysowanie kropki, jeœli jest na mapie
+	// Draw dot, if it is on the map
 	if (onMap) {
 		static int pulse = 0;
 		static int pulseDelay = 50;
@@ -533,14 +533,14 @@ DotStatus RedDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* redDot, do
 			DrawSurface(screen, scaledRedDot, dot.x + GRID_SIZE / 2, dot.y + GRID_SIZE / 2);
 		}
 
-		// Aktualizacja licznika pulsowania
+		// Animation counter update
 		pulse++;
-		if (pulse >= pulseDelay * 2) { // Reset cyklu po wyœwietleniu obu form
+		if (pulse >= pulseDelay * 2) { // Cycle reset after displaying both forms
 			pulse = 0;
 		}
 	}
 
-	// Rysowanie paska postêpu
+	// drawing the progress bar
 	if (onMap) {
 		DrawProgressBar(screen, progress);
 		redDotInfo.progressBar = progress;
@@ -583,7 +583,7 @@ void RankingDisplay(SDL_Surface* screen, SDL_Surface* charset, int points) {
 	char names[3][20];
 	int scores[3];
 
-	// Odczyt rankingu z pliku
+	// Read ranking from a file
 	ranking = fopen("ranking.txt", "r");
 	if (ranking) {
 		fscanf(ranking, "%s %d\n%s %d\n%s %d\n",
@@ -593,14 +593,14 @@ void RankingDisplay(SDL_Surface* screen, SDL_Surface* charset, int points) {
 		fclose(ranking);
 	}
 	else {
-		// Domyœlne wartoœci rankingu
+		// Default ranking values
 		strcpy(names[0], "N/A");
 		strcpy(names[1], "N/A");
 		strcpy(names[2], "N/A");
 		scores[0] = scores[1] = scores[2] = 0;
 	}
 
-	// Wyœwietlenie rankingu
+	// Ranking display
 	DrawRectangle(screen, 100, 300, 440, 160, SDL_MapRGB(screen->format, 255, 255, 255), SDL_MapRGB(screen->format, 36, 36, 36));
 	char text[128];
 	sprintf(text, "Ranking:");
@@ -611,11 +611,11 @@ void RankingDisplay(SDL_Surface* screen, SDL_Surface* charset, int points) {
 		DrawString(screen, 120, 340 + i * 20, text, charset);
 	}
 
-	// Sprawdzenie, czy wynik kwalifikuje siê do rankingu
+	// Checking if score qualifies for ranking
 	if (points > scores[2]) {
 		sprintf(text, "Your score qualifies! Enter your name:");
 		DrawString(screen, 120, 420, text, charset);
-		SDL_UpdateWindowSurface(SDL_GetWindowFromID(1)); // Odœwie¿enie okna
+		SDL_UpdateWindowSurface(SDL_GetWindowFromID(1)); // Window refresh
 
 		char newName[20] = "";
 		SDL_StartTextInput();
@@ -625,29 +625,29 @@ void RankingDisplay(SDL_Surface* screen, SDL_Surface* charset, int points) {
 		while (enteringName && SDL_WaitEvent(&event)) {
 			if (event.type == SDL_TEXTINPUT) {
 				if (strlen(newName) < 19) {
-					strcat(newName, event.text.text); // Dodawanie znaków
+					strcat(newName, event.text.text); // adding chars
 				}
 			}
 			else if (event.type == SDL_KEYDOWN) {
 				if (event.key.keysym.sym == SDLK_RETURN) {
-					enteringName = false; // Zatwierdzenie nicku Enterem
+					enteringName = false; // Submit nickname with enter
 				}
 				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(newName) > 0) {
-					newName[strlen(newName) - 1] = '\0'; // Usuwanie znaku Backspace
+					newName[strlen(newName) - 1] = '\0'; // Backspace
 				}
 			}
 
-			// Wyœwietlanie wprowadzanego nicku
+			// Display the entering nickname
 			DrawRectangle(screen, 120, 440, 300, 18, SDL_MapRGB(screen->format, 255, 255, 255), SDL_MapRGB(screen->format, 36, 36, 36));
 			DrawString(screen, 120, 445, newName, charset);
-			SDL_UpdateWindowSurface(SDL_GetWindowFromID(1)); // Odœwie¿anie okna gry
+			SDL_UpdateWindowSurface(SDL_GetWindowFromID(1)); // Game window refresh
 		}
 		SDL_StopTextInput();
 
-		// Aktualizacja rankingu po wprowadzeniu nicku
+		// Ranking update after nickname submit
 		RankingSorting(points, scores, names, newName);
 
-		// Wyœwietlenie zaktualizowanego rankingu
+		// Updated ranking display
 		DrawRectangle(screen, 100, 300, 440, 160, SDL_MapRGB(screen->format, 255, 255, 255), SDL_MapRGB(screen->format, 36, 36, 36));
 		sprintf(text, "Updated Ranking:");
 		DrawString(screen, 120, 320, text, charset);
@@ -765,13 +765,13 @@ void UpdateGame(Uint32* currentTime, Uint32* lastMoveTime, double* snakeSpeed, S
 		newHead = { head.x + *dx, head.y + *dy };
 
 		if (!IsInsideGameArea(newHead) || CheckCollision(newHead, snake)) {
-			// Wyœwietlenie komunikatu koñca gry
+			// Game over screen
 			DrawRectangle(screen, 100, 200, 440, 80, SDL_MapRGB(screen->format, 255, 255, 255), SDL_MapRGB(screen->format, 36, 36, 36));
 			DrawString(screen, 120, 220, "GAME OVER! Press 'n' to restart or 'ESC' to quit.", charset);
 			RankingDisplay(screen, charset, *totalPoints);
 			SDL_UpdateWindowSurface(window);
 
-			// Pauza w grze czekaj¹ca na decyzjê gracza
+			// Game pause, waiting for player's decision
 			bool gameOver = true;
 			while (gameOver && SDL_WaitEvent(event)) {
 				if (event->type == SDL_QUIT || (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE)) {
@@ -844,7 +844,7 @@ int main(int argc, char **argv) {
 		UpdateGame(&currentTime, &lastMoveTime, &snakeSpeed, &event, screen, charset, window, snake, &dx, &dy, &totalPoints, &gameStartTime, &speedUpTime, &blueDotInfo, &redDotInfo, &running);
 
 		starting_tick = SDL_GetTicks();
-		Uint32 elapsedTime = (starting_tick - gameStartTime); // Czas w milisekundach
+		Uint32 elapsedTime = (starting_tick - gameStartTime); // time in miliseconds
 
 		if ((currentTime - speedUpTime)/1000 >= SPEED_UP_TIME_INTERVAL) {
 			snakeSpeed /= SPEED_UP_RATE;
