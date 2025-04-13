@@ -23,8 +23,8 @@ extern "C" {
 #define SPEED_UP_RATE 1.2	// speed multiplier: higher rate - faster, lower rate - slower
 #define SLOW_DOWN_RATE 1.2	// speed multiplier: higher rate - slower, lower rate - faster
 #define RED_DOT_LIVESPAN 10000 // in milliseconds
-#define RED_DOT_FREQUENCY_LOWEST 5	//lowest time span between spawing red dot, in seconds
-#define RED_DOT_FREQUENCY_HIGHEST 30	//highest time span between spawing red dot, in seconds
+#define RED_DOT_FREQUENCY_LOWEST 5	//lowest time span between spawning red dot, in seconds
+#define RED_DOT_FREQUENCY_HIGHEST 30	//highest time span between spawning red dot, in seconds
 #define POINTS_PER_DOT 1
 
 typedef struct {
@@ -191,7 +191,7 @@ void DrawInfoBar(SDL_Surface* screen, SDL_Surface* charset, Uint32 elapsedTime, 
 
 	DrawRectangle(screen, 4, 4, SCREEN_WIDTH - 8, 56, white, blue);
 
-	sprintf(text, "Kacper Trznadel, 203563");
+	sprintf(text, "The Snake Game");
 	DrawString(screen, 8, 8, text, charset);
 
 	int minutes = elapsedTime / 60000;
@@ -199,8 +199,6 @@ void DrawInfoBar(SDL_Surface* screen, SDL_Surface* charset, Uint32 elapsedTime, 
 	int milliseconds = elapsedTime % 1000;
 	sprintf(text, "Time: %02d:%02d:%03d", minutes, seconds, milliseconds);
 	DrawString(screen, 8, 20, text, charset);
-	sprintf(text, "Completed Requirements: 1, 2, 3, 4, A, B, C, D, E, F, G");
-	DrawString(screen, 8, 32, text, charset);
 	sprintf(text, "Points: %d", totalPoints);
 	DrawString(screen, 8, 50, text, charset);
 	//sprintf(text, "Snake Speed: %lf", snakeSpeed);
@@ -415,7 +413,6 @@ DotStatus BlueDotEvent(SDL_Surface* screen, Queue* snake, SDL_Surface* blueDot, 
 		Point tail = getElementAt(snake, snake->size - 1);
 		addToQueue(snake, tail);
 		(*totalPoints) += POINTS_PER_DOT;
-		*snakeSpeed /= 2;
 		dot = DotGenerator(screen, snake);
 		blueDotInfo.x = dot.x;
 		blueDotInfo.y = dot.y;
@@ -809,7 +806,7 @@ int main(int argc, char **argv) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	srand(time(NULL));
 	
-	SDL_Window* window = SDL_CreateWindow("Snake Game | Kacper Trznadel, 203563", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	SDL_Window* window = SDL_CreateWindow("Snake Game | created by Kacper Trznadel", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 	SDL_Surface* charset = SDL_LoadBMP("./cs8x8.bmp");
 	SDL_Surface* blueDot = SDL_LoadBMP("./blueDot.bmp");
