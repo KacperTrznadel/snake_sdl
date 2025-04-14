@@ -3,7 +3,7 @@
 
 # Description
 Classic snake game using C Language with SDL Library.
-
+Video gameplay: https://youtu.be/mPsN94Pp4lU?si=g5q-8jNfGEfCa8SD
 
 ## Features
 
