@@ -1,12 +1,12 @@
 
 # Snake SDL Game
 
-# Description
+# 📝 Description
 Classic snake game using C Language with SDL Library.
 
 Video gameplay: https://youtu.be/mPsN94Pp4lU?si=g5q-8jNfGEfCa8SD
 
-## Features
+## ✨ Features
 
 - **Basic Snake Movement:** Use arrow keys in order to control the Snake movement.
 - **Auto Border Detection:** When Snake reaches the border, automatically turns right if possible (otherwise, to the left).
@@ -21,7 +21,7 @@ Video gameplay: https://youtu.be/mPsN94Pp4lU?si=g5q-8jNfGEfCa8SD
 - **Best Scores Leaderboard:** Top three scores are being displayed everytime the game ends. If your new score meets that criteria, you can enter your nickname and appear in the appropriate place at the Leaderboard.
 - **Easy to customize:** Most parameters of the game (like speed-up interval, speed-up/slow-down rate, red dot lifespan, points per dot etc.)can be modified by changing constants at the beginning of the Code.
 
-## Compilation
+## ⚙️ Compilation
 
 In order to compile and run the game, use the start.sh bash script, by inputing following line in Linux Terminal:
 
@@ -29,7 +29,7 @@ In order to compile and run the game, use the start.sh bash script, by inputing 
 ./start.sh
 ```
 
-## How to play
+## 🎮 How to play
 
 - Control Snake movement by arrow keys.
 - Eat dots to grow longer and gain points.
